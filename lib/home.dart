@@ -1,6 +1,7 @@
 import 'package:chips_choice/chips_choice.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:interntsk/visible.dart';
 import 'genres.dart';
 
 class Generesscreen extends StatefulWidget {
@@ -11,23 +12,26 @@ class Generesscreen extends StatefulWidget {
 }
 
 class _GeneresscreenState extends State<Generesscreen> {
+
+
   @override
+  final _firstVisibilityKey = UniqueKey();
+  final _secondVisibilityKey = UniqueKey();
+  final GlobalKey<State<BottomSheetContent>> key = new GlobalKey<State<BottomSheetContent>>();
+  final  Color? selectedColor =Colors.grey;
   final DataServices dataServices = DataServices();
   bool _isChecked = false;
 
-  List<String> _selectedGenres = [];
-     Color? _selectedColor;
-  @override
- void initState() {
-    setState(() {
-      Color? _selectedColor;
-    });
-    super.initState();
-  }
+  bool isChecked1 = false;
+
+ final List<String> selectedGenres = [];
+  bool isLoading = false;
+
 
 
   @override
   Widget build(BuildContext context) {
+    print("Parent widget rebuild!");
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.black,
@@ -59,9 +63,12 @@ class _GeneresscreenState extends State<Generesscreen> {
           future: dataServices.loadData(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
+
+
               List<dynamic>? genres = snapshot.data;
 
               return SingleChildScrollView(
+
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -195,305 +202,103 @@ class _GeneresscreenState extends State<Generesscreen> {
                     SizedBox(
                       height: 5,
                     ),
-                    Visibility(
-                      visible: _selectedGenres.isEmpty,
-                      child: GestureDetector(
-                          onTap: () {
-                            showBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Container(
-                                    color: Colors.black,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Geners",
-                                          style:
-                                              TextStyle(color: Colors.orange),
-                                        ),
-                                        SizedBox(
-                                          height: 25,
-                                        ),
-                                        Wrap(
-                                          children: genres!.map((genre) {
+                    Stack(
+                      children: [
+                        Visibility(
+                          key: _firstVisibilityKey,
+                          visible: selectedGenres.isEmpty ,
+                          child: GestureDetector(
+                            onTap: () {
 
+                                showBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return BottomSheetContent(
+                                          selectedGenres:selectedGenres,genres:genres,key:key,parentState: this);
 
-                                            _selectedColor = _selectedGenres.length == 0 ? Colors.grey : Colors.orange;
-                                            return ChoiceChip(
-                                              label: Text(genre),
-                                              selected: _selectedGenres.contains(genre),
-                                              onSelected: (bool selected) {
-                                                setState(() {
-                                                  if (selected) {
-                                                    _selectedGenres.add(genre);
-                                                    _selectedColor = _selectedGenres.length >= 1 ? Colors.orange : Colors.grey;
-                                                    print(_selectedGenres);
-                                                  } else {
-                                                    _selectedGenres.remove(genre);
-                                                    _selectedColor = _selectedGenres.length >= 1 ? Colors.orange : Colors.grey;
-                                                  }
-                                                });
-                                              },
-                                              selectedColor: _selectedColor,
-                                            );
+                              });
+                                setState(() {
 
-                                          }).toList(),
-                                        ),
-                                        Padding(
-                                          padding:
-                                          const EdgeInsets.only(
-                                              top: 50),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment
-                                                .end,
-                                            children: [
-                                              Expanded(
-                                                flex: 1,
-                                                child: ElevatedButton(
-                                                    style:
-                                                    ButtonStyle(
-                                                      backgroundColor:
-                                                      MaterialStateProperty
-                                                          .all(Colors
-                                                          .black),
-                                                    ),
-                                                    onPressed: () =>
-                                                        Navigator.of(
-                                                            context)
-                                                            .pop(
-                                                            _selectedGenres),
-                                                    child: Text(
-                                                      "OK",
-                                                      style: TextStyle(
-                                                          color: Colors
-                                                              .orange),
-                                                    )),
-                                              ),
-                                              Expanded(
-                                                flex: 1,
-                                                child: ElevatedButton(
-                                                    style:
-                                                    ButtonStyle(
-                                                      backgroundColor:
-                                                      MaterialStateProperty
-                                                          .all(Colors
-                                                          .black),
-                                                    ),
-                                                    onPressed: () =>
-                                                        Navigator.of(
-                                                            context)
-                                                            .pop(),
-                                                    child: Text(
-                                                      "Cancel",
-                                                      style: TextStyle(
-                                                          color: Colors
-                                                              .orange),
-                                                    )),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
                                 });
-                          },
-                          child: Column(
-                            //crossAxisAlignment: CrossAxisAlignment.start,
+
+                            },
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 320),
+                                  child: Text(
+                                    "Genre",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextField(
+                                  enabled: false,
+                                  decoration: InputDecoration(
+                                      suffixIcon: Icon(
+                                        Icons.downloading,
+                                        color: Colors.white,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                        borderSide: BorderSide(color: Colors.white),
+                                      ),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.white),
+                                      )),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        Visibility(
+                          key:_secondVisibilityKey,
+                          visible: selectedGenres.isNotEmpty ,
+                          child: Row(
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 320),
-                                child: Text(
-                                  "Genre",
-                                  style: TextStyle(color: Colors.white),
+                              Expanded(
+                                child: Wrap(
+                                  children: [
+                                    ...selectedGenres.map((String item) {
+                                      return Chip(
+                                        backgroundColor: Colors.orange,
+                                        label: Text(item),
+                                        onDeleted: () {
+                                          setState(() {
+                                            selectedGenres.remove(item);
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                    IconButton(
+                                        icon: Icon(
+                                          Icons.add,
+                                          size: 32.0,
+                                          color: Colors.deepOrange,
+                                        ),
+                                        onPressed: () {
+                                          showBottomSheet(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return BottomSheetContent(
+                                                    selectedGenres:selectedGenres,genres:genres,key:key,
+                                                    parentState: this);
+                                              });
+                                        }
+                                    ),
+                                  ],
                                 ),
                               ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              TextField(
-                                enabled: false,
-                                decoration: InputDecoration(
-                                    suffixIcon: Icon(
-                                      Icons.downloading,
-                                      color: Colors.white,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      borderSide:
-                                          BorderSide(color: Colors.white),
-                                    ),
-                                    disabledBorder: OutlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: Colors.white),
-                                    )),
-                              ),
                             ],
-                          )),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Visibility(
-                        visible: _selectedGenres.isNotEmpty,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Wrap(
-                                children: [
-                                  ..._selectedGenres.map((String item) {
-                                    return Chip(
-                                      backgroundColor: Colors.orange,
-                                      label: Text(item),
-                                      onDeleted: () {
-                                        setState(() {
-                                          _selectedGenres.remove(item);
-                                        });
-                                      },
-                                    );
-                                  }).toList(),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.add,
-                                      size: 32.0,
-                                      color: Colors.deepOrange,
-                                    ),
-                                    onPressed: () {
-                                      showBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Container(
-                                              color: Colors.black,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "Geners",
-                                                    style: TextStyle(
-                                                        color: Colors.orange),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 25,
-                                                  ),
-                                                  Wrap(
-                                                    children:
-                                                        genres!.map((genre) {
-                                                      Color? _selectedColor =
-                                                          Colors.orange;
 
-                                                      return ChoiceChip(
-                                                        label: Text(genre),
-                                                        selected:
-                                                            _selectedGenres
-                                                                .contains(
-                                                                    genre),
-                                                        onSelected:
-                                                            (bool selected) {
-                                                          setState(() {
-                                                            if (selected) {
-                                                              _selectedGenres
-                                                                  .add(genre);
-                                                              _selectedColor =
-                                                                  _selectedGenres
-                                                                              .length >=
-                                                                          1
-                                                                      ? Colors
-                                                                          .orange
-                                                                      : Colors
-                                                                          .grey;
-                                                              print(
-                                                                  _selectedGenres);
-                                                            } else {
-                                                              _selectedGenres
-                                                                  .remove(
-                                                                      genre);
-                                                              _selectedColor =
-                                                                  _selectedGenres
-                                                                              .length >=
-                                                                          1
-                                                                      ? Colors
-                                                                          .orange
-                                                                      : Colors
-                                                                          .grey;
-                                                            }
-                                                          });
-                                                          setState(() {});
-                                                        },
-                                                        selectedColor:
-                                                            _selectedColor,
-                                                      );
-                                                    }).toList(),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 50),
-                                                    child: Row(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        Expanded(
-                                                          flex: 1,
-                                                          child: ElevatedButton(
-                                                              style:
-                                                                  ButtonStyle(
-                                                                backgroundColor:
-                                                                    MaterialStateProperty
-                                                                        .all(Colors
-                                                                            .black),
-                                                              ),
-                                                              onPressed: () =>
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop(
-                                                                          _selectedGenres),
-                                                              child: Text(
-                                                                "OK",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .orange),
-                                                              )),
-                                                        ),
-                                                        Expanded(
-                                                          flex: 1,
-                                                          child: ElevatedButton(
-                                                              style:
-                                                                  ButtonStyle(
-                                                                backgroundColor:
-                                                                    MaterialStateProperty
-                                                                        .all(Colors
-                                                                            .black),
-                                                              ),
-                                                              onPressed: () =>
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop(),
-                                                              child: Text(
-                                                                "Cancel",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .orange),
-                                                              )),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          });
-                                    },
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        )),
+
                     SizedBox(
                       height: 10,
                     ),
@@ -539,12 +344,12 @@ class _GeneresscreenState extends State<Generesscreen> {
                           height: 20,
                           color: Colors.white,
                           child: Checkbox(
-                            value: _isChecked,
+                            value: isChecked1,
                             activeColor: Colors.orange,
                             checkColor: Colors.black,
                             onChanged: (bool? value) {
                               setState(() {
-                                _isChecked = value == true;
+                                isChecked1 = value == true;
                               });
                             },
                           ),
@@ -566,7 +371,7 @@ class _GeneresscreenState extends State<Generesscreen> {
                       child: ElevatedButton(
                           style: ButtonStyle(
                             backgroundColor:
-                                MaterialStateProperty.all(Colors.orangeAccent),
+                            MaterialStateProperty.all(Colors.orangeAccent),
                           ),
                           onPressed: () {},
                           child: Text("SUBMIT")),
